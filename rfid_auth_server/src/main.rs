@@ -4,7 +4,7 @@ extern crate rocket;
 
 use rocket_contrib::json; 
 
-use heatshield::{logout, token, policy, result::WebResult, BASEPATH};
+use heatshield::{logout, token, policy::Bearer, result::WebResult, BASEPATH};
 const RFID_ROUTES: &'static str = "/rfid/v1";
 
 fn main() {
@@ -15,7 +15,7 @@ fn main() {
 }
 
 #[get("/get_key", format = "application/json")]
-fn get_key(_policy: policy::Bearer) -> WebResult {
+fn get_key(_policy: Bearer) -> WebResult {
     // todo:
     // setup postgres database with (id, account_id, key)
     Ok(json!({"key": "abc123"}))

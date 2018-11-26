@@ -39,7 +39,8 @@ async def login(username, password, client_id):
             'credentials': { 'username': username, 'password': password }
         }) as response:
             return await response.json() 
-            
+
+# Retrieve the encryption key for a file from the resource server
 async def get_file_decryption_key(access_token):
     url = resource_server + "/rfid/v1/get_key"
     headers = {"Authorization": "Bearer " + access_token}
@@ -47,7 +48,6 @@ async def get_file_decryption_key(access_token):
     async with aiohttp.ClientSession(headers=headers) as session:
         async with session.get(url) as response:
             return await response.json()
-
 
 async def main():
     current_user = None
@@ -57,7 +57,7 @@ async def main():
         current_user = LoginResponse(user_data)
         key = await get_file_decryption_key(current_user.access_token)
         print(key)
-        
+        did_logout = await logout(current_user.access_token)
 
 loop = asyncio.get_event_loop()
 loop.run_until_complete(main())
