@@ -1,0 +1,6 @@
+[development]
+address = "10.10.3.3"
+port = 1234
+workers = 2
+keep_alive = 5
+log = "normal"
