@@ -43,7 +43,7 @@ async def login(username, password, client_id):
 
 # Retrieve the encryption key for a file from the resource server
 async def get_file_decryption_key(access_token):
-    url = resource_server + "/rfid/v1/get_key"
+    url = resource_server + "/rfid/v1/request_key"
     headers = {"Authorization": "Bearer " + access_token}
 
     async with aiohttp.ClientSession(headers=headers) as session:
