@@ -8,6 +8,8 @@ import RPi.GPIO as GPIO
 import MFRC522
 import signal
 
+client_uuid = 'df5c9486-2b2b-4cc8-a7bf-3bba73772d2f'
+
 parser = argparse.ArgumentParser(description='RFID CLIENT')
 parser.add_argument('-host', help="url host of the resource server")
 parser.add_argument('-port', help="the port the resource server is running on")
@@ -61,13 +63,25 @@ async def main():
     url = resource_server + api_base_path
     async with aiohttp.ClientSession() as session:
         card_data = await read_credentials()
-        user_data = await login('rfidpi', 'iotthing', 'df5c9486-2b2b-4cc8-a7bf-3bba73772d2f')
-        current_user = LoginResponse(user_data)
-        key = await get_file_decryption_key(current_user.access_token)
-        print(key)
-        did_logout = await logout(current_user.access_token)
+        username, password = parse_credentials(card_data)
+        
+        user_data = await login(username, password, client_uuid)
+        if 'access_token' in user_data:
+            current_user = LoginResponse(user_data)
+            # green led
+            key = await get_file_decryption_key(current_user.access_token)
+            print(key)
+            did_logout = await logout(current_user.access_token)
+            # green led off
+        elif 'error_message' in user_data:
+            # red led
+            print(user_data['error_message'])
+        else:
+            # red led
+            print("Unauthorized")
 
 async def read_credentials():
+    result = []
     continue_reading = True
 
     # Create an object of the class MFRC522
@@ -99,10 +113,24 @@ async def read_credentials():
 
             # Check if authenticated
             if status == MIFAREReader.MI_OK:
-                return await MIFAREReader.MFRC522_Read(8)
+                result = MIFAREReader.MFRC522_Read(8)
                 MIFAREReader.MFRC522_StopCrypto1()
+                if len(result) != 0:
+                    continue_reading = False
             else:
                 print("Authentication error")
 
-    loop = asyncio.get_event_loop()
-    loop.run_until_complete(main())
+    creds = ""
+    for x in result:
+        creds += str(chr(x))
+
+    return creds
+
+def parse_credentials(card_data):
+    parsed_creds = card_data.partition('|')
+    username = parsed_creds[0]
+    password = parsed_creds[2].rstrip('|')
+    return (username, password)
+
+loop = asyncio.get_event_loop()
+loop.run_until_complete(main())
