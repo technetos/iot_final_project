@@ -1,8 +1,8 @@
 table! {
-    file_keys (id) {
+    files (id) {
         id -> Int4,
         account_id -> Uuid,
         fname -> Text,
-        key -> Text,
+        content -> Text,
     }
 }

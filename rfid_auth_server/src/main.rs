@@ -7,7 +7,7 @@ extern crate serde_derive;
 extern crate diesel;
 
 mod schema;
-use crate::schema::file_keys;
+use crate::schema::files;
 
 #[macro_use]
 extern crate rocket;
@@ -29,44 +29,50 @@ const RFID_ROUTES: &'static str = "/rfid/v1";
 fn main() {
     rocket::ignite()
         .mount(BASEPATH, routes![logout::logout, token::get_token])
-        .mount(RFID_ROUTES, routes![get_key])
+        .mount(RFID_ROUTES, routes![get_file, open_door])
         .launch();
 }
 
 #[derive(Serialize, Deserialize)]
-pub struct FileDecryptionPayload {
+pub struct FilePayload {
     pub fname: String,
 }
 
-#[post("/request_key", format = "application/json", data = "<payload>")]
-fn get_key(policy: Bearer, payload: Json<FileDecryptionPayload>) -> WebResult {
-    let decryption_req = payload.into_inner();
-    let key = FileKeyController
-        .get_all(Box::new(file_keys::account_id.eq(policy.0.user_token.account_id)))
+#[post("/request_file", format = "application/json", data = "<payload>")]
+fn get_file(policy: Bearer, payload: Json<FilePayload>) -> WebResult {
+    let file_req = payload.into_inner();
+    let files = FileController
+        .get_all(Box::new(files::account_id.eq(policy.0.user_token.account_id)))
         .map_err(|_| Custom(Status::NotFound, json!({ "error_message": "Not Found" })))?;
 
-    let res = key.iter()
-        .filter(|entry| entry.file_key.fname == decryption_req.fname)
+    let res = files.iter()
+        .filter(|entry| entry.file.fname == file_req.fname)
         .collect::<Vec<_>>();
 
     if res.is_empty() {
         Err(Custom(Status::NotFound, json!({"error_message": "Not Found" })))
     } else {
-        Ok(json!({"key": res.first().unwrap() }))
+        Ok(json!({"file": res.first().unwrap() }))
     }
 }
 
-#[resource(schema = file_keys, table = "file_keys")]
+#[post("/unlock_door", format = "application/json")]
+fn open_door(policy: Bearer) -> WebResult {
+    println!("Unlocking door");
+    Ok(json!({}))
+}
+
+#[resource(schema = files, table = "files")]
 #[DBVAR = "RFID_AUTH_DB"]
-struct FileKey {
+struct File {
     account_id: Uuid,
     fname: String,
-    key: String,
+    content: String,
 }
 
 fn setup_mock_data(account_id: Uuid) {
-    match FileKeyController
-        .create(&FileKey { account_id, fname: String::from("foo.txt"), key: String::from("shhh")})
+    match FileController
+        .create(&File { account_id, fname: String::from("foo.txt"), content: String::from("some random file contents, kyle why arent you paying attention, foobar")})
         .map_err(|_| json!({"error": "unable to create entry"})) {
             Ok(_) => {},
             Err(e) => { println!("{:#?}", e) },
