@@ -2,13 +2,13 @@
 A general purpose rfid based authentication system for protecting anything with
 a plastic card :rofl:
 
-# Infrastructure
+# :building_construction: Infrastructure
 
-## Backend
+## :rocket: Backend
 The backend server is implemented in the Rust Programming Language and provides
 access to a number of different functions the client can request.  
 
-## Frontend
+## :snake: Frontend
 The frontend is a command line client implemented in Python that talks to the
 backend to perform operations.  Actions performed using the client require key card access.  
 
@@ -20,7 +20,7 @@ Action | Description | Requires Key Card
 `file` | Request a file given an id card and filename.  Acts like a single flat directory for a users files, text only | yes
 `door` | Request that a door be opened.  Actual implementation only prints `Opening Door` on the server and serves as an example that anything can be put behind a protected route.  | yes
 
-# Authentication & Authorization
+# :old_key: Authentication & Authorization
 When an rfid card/token is scanned the data stored on a section of the storage
 is read, parsed, and sent to the backend as a set of credentials.  Assuming that
 the username and password supplied on the rfid card/token are valid, an access
@@ -38,7 +38,7 @@ in the backend database and will not be rejected.
 A user with username and password that are not in the database, that is they do
 not have an account, will not be granted an access token.  
 
-# Protected Routes
+# :lock: Protected Routes
 Any route can be a protected route by adding `policy: Bearer` as an argument to
 the function.  The Bearer policy is what is known as a RequestGuard in the
 Rocket HTTP framework.  When a RequestGuard fails, the route that its used on is
