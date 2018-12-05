@@ -5,12 +5,17 @@ a plastic card :rofl:
 # Getting Started
 ## Setting up the auth service
 The core of the authentication service is provided by [heatshield][1].
+
 The following tasks need to be achieved before the auth service can be used:
 
-+ Add a client
-+ Add a user
+### Set the database urls
 
-These tasks can be achieved using [heatshield-cli][2]
+```
+$ cd rfid_auth_server
+$ source setup.sh
+```
+### Add a client and user to the database
+This can be done with [heatshield-cli][2].
 
 # Infrastructure
 
